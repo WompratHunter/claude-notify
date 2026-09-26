@@ -8,7 +8,7 @@ Status: work in progress, tracked via GitHub issues in this repo.
 
 ```sh
 brew install terminal-notifier
-claude plugin marketplace add evanmarkscott/claude-notify
+claude plugin marketplace add WompratHunter/claude-notify
 claude plugin install claude-notify@claude-notify
 ```
 
