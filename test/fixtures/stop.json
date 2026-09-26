@@ -1,0 +1,6 @@
+{
+  "session_id": "test-session-stop",
+  "hook_event_name": "Stop",
+  "cwd": "/Users/evanscott/dev/claude-notify",
+  "last_assistant_message": "All done — the notify script now handles the Stop event and delivers a Completion banner."
+}

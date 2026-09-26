@@ -1,0 +1,16 @@
+{
+  "description": "Raise a macOS notification when a Claude Code turn completes or needs attention",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/notify.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "claude-notify",
+  "description": "macOS notifications for Claude Code, tuned for Ghostty + Zellij",
+  "owner": {
+    "name": "Evan Scott"
+  },
+  "plugins": [
+    {
+      "name": "claude-notify",
+      "source": "./plugins/claude-notify",
+      "description": "Banner/sound notifications for turn completion and attention requests"
+    }
+  ]
+}
