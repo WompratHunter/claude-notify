@@ -1,0 +1,7 @@
+{
+  "session_id": "test-session-elicitation",
+  "hook_event_name": "Notification",
+  "notification_type": "elicitation_dialog",
+  "cwd": "/Users/evanscott/dev/claude-notify",
+  "message": "An MCP server is asking a question."
+}

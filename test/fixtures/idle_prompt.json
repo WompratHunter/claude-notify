@@ -1,0 +1,7 @@
+{
+  "session_id": "test-session-idle",
+  "hook_event_name": "Notification",
+  "notification_type": "idle_prompt",
+  "cwd": "/Users/evanscott/dev/claude-notify",
+  "message": "Claude has been waiting for your input for a while."
+}

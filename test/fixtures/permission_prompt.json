@@ -1,0 +1,7 @@
+{
+  "session_id": "test-session-permission",
+  "hook_event_name": "Notification",
+  "notification_type": "permission_prompt",
+  "cwd": "/Users/evanscott/dev/claude-notify",
+  "message": "Claude wants to run a Bash command that isn't allowlisted."
+}

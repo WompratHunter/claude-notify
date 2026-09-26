@@ -1,0 +1,7 @@
+{
+  "session_id": "test-session-unmatched",
+  "hook_event_name": "Notification",
+  "notification_type": "auth_success",
+  "cwd": "/Users/evanscott/dev/claude-notify",
+  "message": "Authenticated successfully."
+}

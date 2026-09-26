@@ -1,0 +1,7 @@
+{
+  "session_id": "test-session-needs-input",
+  "hook_event_name": "Notification",
+  "notification_type": "agent_needs_input",
+  "cwd": "/Users/evanscott/dev/claude-notify",
+  "message": "Claude needs more information to continue."
+}
