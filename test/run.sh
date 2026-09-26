@@ -15,6 +15,7 @@ fail=0
 # ACTION | expected SUBTITLE (blank = don't check) | expected SOUND (blank =
 # don't check)
 not_frontmost="CLAUDE_NOTIFY_FRONTMOST_BUNDLE_ID_FOR_TEST=com.apple.Terminal"
+ghostty_frontmost="CLAUDE_NOTIFY_FRONTMOST_BUNDLE_ID_FOR_TEST=com.mitchellh.ghostty"
 cases=(
   "stop.json|$not_frontmost|banner|Done|Glass"
   "permission_prompt.json|$not_frontmost|banner|Needs approval|Submarine"
@@ -22,6 +23,8 @@ cases=(
   "elicitation_dialog.json|$not_frontmost|banner|Waiting on you|Submarine"
   "agent_needs_input.json|$not_frontmost|banner|Waiting on you|Submarine"
   "unmatched_notification_type.json|$not_frontmost|skip||"
+  "stop.json|$ghostty_frontmost|sound-only|Done|Glass"
+  "permission_prompt.json|$ghostty_frontmost|sound-only|Needs approval|Submarine"
 )
 
 run_case() {
