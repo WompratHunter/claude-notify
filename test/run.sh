@@ -11,20 +11,29 @@ fixtures="$script_dir/fixtures"
 pass=0
 fail=0
 
+# A PATH with the same essentials but no terminal-notifier, to exercise the
+# osascript fallback deterministically.
+path_without_terminal_notifier="/usr/bin:/bin"
+
 # Each case: fixture file | extra env (space-separated KEY=VAL) | expected
 # ACTION | expected SUBTITLE (blank = don't check) | expected SOUND (blank =
 # don't check)
 not_frontmost="CLAUDE_NOTIFY_FRONTMOST_BUNDLE_ID_FOR_TEST=com.apple.Terminal"
 ghostty_frontmost="CLAUDE_NOTIFY_FRONTMOST_BUNDLE_ID_FOR_TEST=com.mitchellh.ghostty"
 cases=(
-  "stop.json|$not_frontmost|banner|Done|Glass"
-  "permission_prompt.json|$not_frontmost|banner|Needs approval|Submarine"
-  "idle_prompt.json|$not_frontmost|banner|Waiting on you|Submarine"
-  "elicitation_dialog.json|$not_frontmost|banner|Waiting on you|Submarine"
-  "agent_needs_input.json|$not_frontmost|banner|Waiting on you|Submarine"
-  "unmatched_notification_type.json|$not_frontmost|skip||"
-  "stop.json|$ghostty_frontmost|sound-only|Done|Glass"
-  "permission_prompt.json|$ghostty_frontmost|sound-only|Needs approval|Submarine"
+  "stop.json|$not_frontmost|banner|Done|Glass|"
+  "permission_prompt.json|$not_frontmost|banner|Needs approval|Submarine|"
+  "idle_prompt.json|$not_frontmost|banner|Waiting on you|Submarine|"
+  "elicitation_dialog.json|$not_frontmost|banner|Waiting on you|Submarine|"
+  "agent_needs_input.json|$not_frontmost|banner|Waiting on you|Submarine|"
+  "unmatched_notification_type.json|$not_frontmost|skip|||"
+  "stop.json|$ghostty_frontmost|sound-only|Done|Glass|"
+  "permission_prompt.json|$ghostty_frontmost|sound-only|Needs approval|Submarine|"
+  "stop.json|CLAUDE_NOTIFY=off $not_frontmost|skip|||"
+  "stop.json|$not_frontmost CLAUDE_NOTIFY_SOUND_DONE=Hero|banner|Done|Hero|"
+  "permission_prompt.json|$not_frontmost CLAUDE_NOTIFY_SOUND_ATTENTION=Funk|banner|Needs approval|Funk|"
+  "stop.json|$not_frontmost ZELLIJ_SESSION_NAME=work|banner|Done||\\[zellij: work\\]"
+  "stop.json|$not_frontmost PATH=$path_without_terminal_notifier|banner|Done|Glass|"
 )
 
 run_case() {
@@ -33,32 +42,42 @@ run_case() {
   local expected_action="$3"
   local expected_subtitle="$4"
   local expected_sound="$5"
+  local expected_body_pattern="$6"
 
-  local output actual_action actual_subtitle actual_sound
+  local output actual_action actual_subtitle actual_sound actual_body actual_delivery
   # shellcheck disable=SC2086 # env_str is intentionally split into KEY=VAL words
   output="$(env -i PATH="$PATH" CLAUDE_NOTIFY_DRY_RUN=1 $env_str \
     "$notify" < "$fixtures/$fixture" 2>/dev/null)"
   actual_action="$(printf '%s\n' "$output" | grep '^ACTION=' | cut -d= -f2-)"
   actual_subtitle="$(printf '%s\n' "$output" | grep '^SUBTITLE=' | cut -d= -f2-)"
   actual_sound="$(printf '%s\n' "$output" | grep '^SOUND=' | cut -d= -f2-)"
+  actual_body="$(printf '%s\n' "$output" | grep '^BODY=' | cut -d= -f2-)"
+  actual_delivery="$(printf '%s\n' "$output" | grep '^DELIVERY=' | cut -d= -f2-)"
 
   local ok=1
   [ "$actual_action" = "$expected_action" ] || ok=0
   [ -z "$expected_subtitle" ] || [ "$actual_subtitle" = "$expected_subtitle" ] || ok=0
   [ -z "$expected_sound" ] || [ "$actual_sound" = "$expected_sound" ] || ok=0
+  if [ -n "$expected_body_pattern" ]; then
+    printf '%s' "$actual_body" | grep -qE "$expected_body_pattern" || ok=0
+  fi
+  # A dedicated case forces PATH to exclude terminal-notifier: expect osascript.
+  if [[ "$env_str" == *"$path_without_terminal_notifier"* ]]; then
+    [ "$actual_delivery" = "osascript" ] || ok=0
+  fi
 
   if [ "$ok" -eq 1 ]; then
-    echo "ok   $fixture -> action=$actual_action subtitle=$actual_subtitle sound=$actual_sound"
+    echo "ok   $fixture [$env_str] -> action=$actual_action subtitle=$actual_subtitle sound=$actual_sound delivery=$actual_delivery body=$actual_body"
     pass=$((pass + 1))
   else
-    echo "FAIL $fixture -> expected action=$expected_action subtitle=$expected_subtitle sound=$expected_sound, got action=$actual_action subtitle=$actual_subtitle sound=$actual_sound"
+    echo "FAIL $fixture [$env_str] -> expected action=$expected_action subtitle=$expected_subtitle sound=$expected_sound body~=$expected_body_pattern, got action=$actual_action subtitle=$actual_subtitle sound=$actual_sound delivery=$actual_delivery body=$actual_body"
     fail=$((fail + 1))
   fi
 }
 
 for case_def in "${cases[@]}"; do
-  IFS='|' read -r fixture env_str expected_action expected_subtitle expected_sound <<< "$case_def"
-  run_case "$fixture" "$env_str" "$expected_action" "$expected_subtitle" "$expected_sound"
+  IFS='|' read -r fixture env_str expected_action expected_subtitle expected_sound expected_body_pattern <<< "$case_def"
+  run_case "$fixture" "$env_str" "$expected_action" "$expected_subtitle" "$expected_sound" "$expected_body_pattern"
 done
 
 echo

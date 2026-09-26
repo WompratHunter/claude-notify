@@ -110,6 +110,17 @@ if [ "$frontmost_bundle_id" = "$GHOSTTY_BUNDLE_ID" ]; then
   action="sound-only"
 fi
 
+# A banner needs a delivery mechanism; decide which one up front so dry-run
+# can report it without actually invoking anything.
+delivery=""
+if [ "$action" = "banner" ]; then
+  if command -v terminal-notifier >/dev/null 2>&1; then
+    delivery="terminal-notifier"
+  elif command -v osascript >/dev/null 2>&1; then
+    delivery="osascript"
+  fi
+fi
+
 # --- dry run: report the decision instead of acting -------------------------
 
 if [ -n "$DRY_RUN" ]; then
@@ -119,6 +130,7 @@ if [ -n "$DRY_RUN" ]; then
   echo "BODY=${body}"
   echo "SOUND=${sound}"
   echo "GROUP=${group}"
+  echo "DELIVERY=${delivery}"
   exit 0
 fi
 
@@ -129,7 +141,7 @@ if [ "$action" = "sound-only" ]; then
   exit 0
 fi
 
-if command -v terminal-notifier >/dev/null 2>&1; then
+if [ "$delivery" = "terminal-notifier" ]; then
   terminal-notifier \
     -title "$title" \
     -subtitle "$subtitle" \
@@ -138,7 +150,7 @@ if command -v terminal-notifier >/dev/null 2>&1; then
     -group "$group" \
     -activate "$GHOSTTY_BUNDLE_ID" \
     >/dev/null 2>&1
-elif command -v osascript >/dev/null 2>&1; then
+elif [ "$delivery" = "osascript" ]; then
   esc_title="${title//\"/\\\"}"
   esc_subtitle="${subtitle//\"/\\\"}"
   esc_body="${body//\"/\\\"}"
